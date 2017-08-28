@@ -10,10 +10,8 @@
     [CmdletBinding()]
     param()
 
-    $RawData = get-RawDellData
+    $RawData = get-RawDataDell
 
-
-    $RawData = $DellRawData
 
     $result = @{}
     $RawData.DriverPackManifest.DriverPackage.SupportedSystems.Brand.Model |

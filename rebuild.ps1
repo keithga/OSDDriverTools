@@ -34,10 +34,6 @@ Foreach ( $libPath in get-childitem -path $PSScriptRoot -Directory )
 {
     Write-Verbose "if not exist $($libPath.FullName)\*.psm1, then create"
 
-    $ImportDirectories = get-childitem -Directory -path .\OSDDriverTools |
-        Where-Object { test-path  "$($_.fullname)\*.ps1" } | 
-        ForEach-Object { "`$PSScriptRoot\$($_.Name)" }
-
 @"
 
 <#
@@ -63,9 +59,7 @@ param(
 
 if (`$Verbose) { `$VerbosePreference = 'Continue' }
 
-`$LibImportPaths = @( "$( $ImportDirectories -join '", "' )" ) 
-
-Get-ChildItem -Path `$LibImportPaths -Filter '*.ps1' -exclude '*.tests.ps1' | 
+Get-ChildItem -Path "`$PSScriptRoot\*.ps1" -exclude '*.tests.ps1' | 
     ForEach-Object {
         Write-Verbose "Importing function `$(`$_.FullName)"
         . `$_.FullName | Out-Null
