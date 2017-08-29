@@ -30,10 +30,10 @@
     }
 
     # Expand if necessary
-    if ( $LocalFile.EndsWith(".xml") ) {
+    if ( $LocalFile.trim().EndsWith(".xml") ) {
         $RawDataFile = $localFile
     }
-    elseif ( $LocalFile.EndsWith(".cab") ) {
+    elseif ( $LocalFile.trim().EndsWith(".cab") ) {
         $RawDataFile = "$($LocalFile).xml"
 
         write-verbose "Expand $LocalFile to $RawDataFile"
@@ -43,6 +43,6 @@
         throw "Unknown data type $LocalFile"
     }
 
-    # Return content
+    # Return content (fix for stupid Lenovo)
     ( get-content -Raw -Path $RawDataFile ) -as [xml]  | Write-Output
 }
