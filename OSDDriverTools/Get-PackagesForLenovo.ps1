@@ -31,6 +31,7 @@ function get-PackagesForLenovo {
                     Select-Object -last 1 |
                     ForEach-Object {
 
+                        #Enumeate through all the models, but only include the package once.
                         $URI = $_.location 
                         write-verbose $_.Location 
                         if ( $_.location -in $results.keys ) {
@@ -76,4 +77,3 @@ function get-PackagesForLenovo {
     Write-Progress -Completed -Activity "Get Lenovo BIOS"
 }
 
-get-PackagesForLenovo
