@@ -31,13 +31,14 @@ function get-DriversForDell {
                 PackageID = $_.ReleaseID
                 Name = $_.Name.Display.'#cdata-section'.trim()
                 Description = 'Details: ' + $_.ImportantInfo.URL
-                Tag = 'BIOS Driver'
+                Tag = 'Driver Dell'
                 Date = $_.dateTime
                 Version = $_.DellVersion
 
                 URL = 'http://' + $RawData.DriverPackManifest.BaseLocation + '/' + $_.Path
                 Size = $_.Size
                 Hash = $_.HashMD5
+                OSVer = $_.supportedoperatingsystems | foreach-object { ($_.OperatingSystem | where-object OSCode -in 'Windows10','Windows7' | ForEach-Object { $_.OSCode.Replace('Windows','Win') + $_.OsArch }) }
 
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy
@@ -47,5 +48,3 @@ function get-DriversForDell {
         } | Write-Output
 
 }
-
-

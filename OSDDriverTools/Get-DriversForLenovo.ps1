@@ -1,4 +1,4 @@
-﻿<#
+﻿
 function get-DriversForLenovo {
     <#
     .SYNOPSIS
@@ -7,46 +7,64 @@ function get-DriversForLenovo {
     .DESCRIPTION
     Get the Driver list from Lenovo
 
-    #
+    #>
     [CmdletBinding()]
     param()
 
     $RawData = get-RawDataLenovo
+    Write-Progress -Activity "Get Lenovo Drivers" -PercentComplete 0
 
-    $ModelTable = get-ModelInfoLenovo
+    $DriverList = $RawData.products.product | 
+        where-object OS -in 'Win10','Win732','Win764'
 
-    $RawData.DriverPackManifest.DriverPackage |
-        Where-Object { 
-            ($_.type -eq 'win') -and
-            ( ( ($_.SupportedOperatingSystems.OperatingSystem.OSCode) -contains 'Windows7') -or ( ($_.SupportedOperatingSystems.OperatingSystem.OSCode) -contains 'Windows10')) -and
-            ( $True )
-        } | 
-        ForEach-Object {
-            $arch = $_.SupportedOperatingSystems.OPeratingSystem | 
-                select-object -first 1 |
-                %{ $_.OSCode.Replace('Windows','W') + $_.osArch }
+    $i = 0
+
+    $DriverList | ForEach-Object {
+
+        Write-Progress -Activity "Get Lenovo DriverModel $Model"  -PercentComplete ( $i++ / $DriverList.Count * 100 ) 
+
+
+        $SCCMLink = $_.DriverPack | where-object ID -eq "SCCM" | foreach-object '#text'
+
+        $DrvLinks = Invoke-WebRequest -UseBasicParsing -Uri $SCCMLink | 
+            select-object -ExpandProperty content | 
+            Select-String -Pattern 'https://download.lenovo.com[^\"]*exe' -AllMatches | 
+            foreach-object Matches | 
+            Foreach-Object Value 
+
+        foreach ( $DrvLink in $DrvLinks ) {
+
+            $OSVer = 'ddd'
+                if ( $DrvLink -like '*_W1064_*' ) { $OSVer = 'Win1064' }
+                if ( $DrvLink -like '*_W1032_*' ) { $OSVer = 'Win1064' }
+                if ( $DrvLink -like '*_W764_*' -or $DrvLink -like '*_W7_64_*' )  { $OSVer = 'Win1064' }
+                if ( $DrvLink -like '*_W732_*' -or $DrvLink -like '*_W7_32_*' )  { $OSVer = 'Win1064' }
 
             [pscustomobject] @{
 
-                PackageID = $_.ReleaseID
-                Name = $_.Name.Display.'#cdata-section'.trim()
-                Description = 'Details: ' + $_.ImportantInfo.URL
-                Tag = 'BIOS Driver'
-                Date = $_.dateTime
-                Version = $_.DellVersion
+                PackageID = split-path -leaf $SccmLink
 
-                URL = 'http://' + $RawData.DriverPackManifest.BaseLocation + '/' + $_.Path
-                Size = $_.Size
-                Hash = $_.HashMD5
+                Name = split-path -leaf $DrvLink.replace('.exe','')
+                Description = "Info: " + $Drvlink.replace('.exe','.txt')
+                Tag = 'Driver Lenovo'
+                Date = $_.DriverPack | Where-Object Date -match '^\d{6}$' | foreach-object { ($_.Date.substring(0,4)+'/'+$_.Date.SubString(4,2)+'/01') }
+                Version = ''
+
+                URL = $DrvLink
+
+                Size = '' #TBD
+                Hash = '' #TBD
+
+                OSVer = $OSVer
 
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy
-                Machines = $_.SupportedSystems.Brand.Model.SystemID # | ForEach-Object { $ModelTable.Item($_) }
-
+                Machines = $_.QUeries.Types.Type
             }
-        } | Write-Output
+        }
 
-#}
+    }
 
+    Write-Progress -Completed -Activity "Get Lenovo Drivers"
 
-#>
+}

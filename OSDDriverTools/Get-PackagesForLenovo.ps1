@@ -14,6 +14,7 @@ function get-PackagesForLenovo {
     $ModelTable = get-ModelInfoLenovo
 
     $results = @{}
+    $i = 0
 
     Write-Progress -Activity "Get Lenovo BIOS" -PercentComplete 0
 
