@@ -27,7 +27,7 @@ $ModuleCommon = @{
     ModuleVersion = ("1.1." + (get-date -Format "yyMM.dd"))
     PowershellVersion = "2.0"
     Description = "OSD Drivers Powershell Library"
-    GUID = [GUID]::NewGUID()
+    GUID = [GUID]"{cca54e24-ff59-4ec6-aa8a-0e2b24e5ce9b}"
 }
 
 Foreach ( $libPath in get-childitem -path $PSScriptRoot -Directory )

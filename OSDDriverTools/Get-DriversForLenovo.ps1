@@ -14,6 +14,8 @@ function get-DriversForLenovo {
     $RawData = get-RawDataLenovo
     Write-Progress -Activity "Get Lenovo Drivers" -PercentComplete 0
 
+    $IWRSettings = get-IWRSettings 
+
     $DriverList = $RawData.products.product | 
         where-object OS -in 'Win10','Win732','Win764'
 
@@ -26,7 +28,7 @@ function get-DriversForLenovo {
 
         $SCCMLink = $_.DriverPack | where-object ID -eq "SCCM" | foreach-object '#text'
 
-        $DrvLinks = Invoke-WebRequest -UseBasicParsing -Uri $SCCMLink | 
+        $DrvLinks = Invoke-WebRequest -UseBasicParsing -Uri $SCCMLink @IWRSettings | 
             select-object -ExpandProperty content | 
             Select-String -Pattern 'https://download.lenovo.com[^\"]*exe' -AllMatches | 
             foreach-object Matches | 
@@ -34,28 +36,20 @@ function get-DriversForLenovo {
 
         foreach ( $DrvLink in $DrvLinks ) {
 
-            $OSVer = 'ddd'
-                if ( $DrvLink -like '*_W1064_*' ) { $OSVer = 'Win1064' }
-                if ( $DrvLink -like '*_W1032_*' ) { $OSVer = 'Win1064' }
-                if ( $DrvLink -like '*_W764_*' -or $DrvLink -like '*_W7_64_*' )  { $OSVer = 'Win1064' }
-                if ( $DrvLink -like '*_W732_*' -or $DrvLink -like '*_W7_32_*' )  { $OSVer = 'Win1064' }
-
             [pscustomobject] @{
 
                 PackageID = split-path -leaf $SccmLink
 
                 Name = split-path -leaf $DrvLink.replace('.exe','')
-                Description = "Info: " + $Drvlink.replace('.exe','.txt')
+                Description = "Info: " + $Drvlink.replace('.exe','.txt') # Cheat!
                 Tag = 'Driver Lenovo'
                 Date = $_.DriverPack | Where-Object Date -match '^\d{6}$' | foreach-object { ($_.Date.substring(0,4)+'/'+$_.Date.SubString(4,2)+'/01') }
                 Version = ''
 
                 URL = $DrvLink
-
                 Size = '' #TBD
                 Hash = '' #TBD
-
-                OSVer = $OSVer
+                OSVer = $DrvLink | ConvertTo-NormalizedOSVersion
 
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy

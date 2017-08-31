@@ -2,10 +2,10 @@
 function get-DriversForDell {
     <#
     .SYNOPSIS
-    Get the BIOS Package list from Dell
+    Get the Driver list from Dell
 
     .DESCRIPTION
-    Get the BIOS Package list from Dell
+    Get the Driver list from Dell
 
     #>
     [CmdletBinding()]
@@ -38,7 +38,7 @@ function get-DriversForDell {
                 URL = 'http://' + $RawData.DriverPackManifest.BaseLocation + '/' + $_.Path
                 Size = $_.Size
                 Hash = $_.HashMD5
-                OSVer = $_.supportedoperatingsystems | foreach-object { ($_.OperatingSystem | where-object OSCode -in 'Windows10','Windows7' | ForEach-Object { $_.OSCode.Replace('Windows','Win') + $_.OsArch }) }
+                OSVer = $_.supportedoperatingsystems | foreach-object { ($_.OperatingSystem | ForEach-Object { $_.OSCode + '.' + $_.OsArch | ConvertTo-NormalizedOSVersion }) }
 
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy

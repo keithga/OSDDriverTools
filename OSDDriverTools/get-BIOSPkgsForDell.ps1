@@ -1,5 +1,5 @@
 
-function get-PackagesForDell {
+function get-BIOSPkgsForDell {
     <#
     .SYNOPSIS
     Get the BIOS Package list from Dell

@@ -7,6 +7,11 @@ function get-ModelInfoHP {
     .DESCRIPTION
     Get the Model list from HP in KVP format
 
+    @{
+        Key = (gwmi win32_baseboard).Product
+        Value = (gwmi Win32_ComputerSystem).Model
+    }
+
     #>
     [CmdletBinding()]
     param()

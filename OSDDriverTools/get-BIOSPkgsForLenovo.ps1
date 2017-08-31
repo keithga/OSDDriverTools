@@ -1,5 +1,5 @@
 ﻿
-function get-PackagesForLenovo {
+function get-BIOSPkgsForLenovo {
     <#
     .SYNOPSIS
     Get the BIOS Package list from Lenovo
