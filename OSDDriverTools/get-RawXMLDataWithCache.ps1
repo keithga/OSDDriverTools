@@ -29,6 +29,9 @@
         Invoke-WebRequest -UseBasicParsing -URI $URI @IWRSettings -OutFile $localFile
     }
 
+    if ( -not ( test-path $localFile ) ) { throw "missing $LocalFile" }
+
+
     # Expand if necessary
     if ( $LocalFile.trim().EndsWith(".xml") ) {
         $RawDataFile = $localFile
