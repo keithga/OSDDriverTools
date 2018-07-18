@@ -13,7 +13,7 @@ function get-BIOSPkgsForDell {
 
     $RawData = get-RawDataDell2
 
-    $ModelTable = get-ModelInfoDell
+    # $ModelTable = get-ModelInfoDell
 
     $RawData.Manifest.SoftwareComponent |
         Where-Object { 
@@ -28,7 +28,7 @@ function get-BIOSPkgsForDell {
                 Name = $_.Name.Display.'#cdata-section'.trim().replace(',',' ')
                 Description = 'Details: ' + $_.ImportantInfo.URL
                 Tag = 'BIOS Dell'
-                Date = $_.dateTime
+                Date = [datetime]$_.dateTime
                 Version = $_.DellVersion
 
                 URL = 'http://' + $RawData.Manifest.BaseLocation + '/' + $_.Path
@@ -37,10 +37,10 @@ function get-BIOSPkgsForDell {
 
                 ExtractCommand = ''  # Nothing to extract for Dell BIOS commands
                 ExecuteCommand = '.\' + (split-path -leaf $_.Path) + ' /s /l=%temp%\BIOSUpdate.log'
-                Machines = $_.SupportedSystems.Brand.Model.SystemID | ForEach-Object { $ModelTable.Item($_) }
+                Machines = $_.SupportedSystems.Brand.Model.SystemID # | ForEach-Object { $ModelTable.Item($_) }
+
 
             }
         } | Write-Output
-
 
 }

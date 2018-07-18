@@ -9,7 +9,8 @@
     #>
     [CmdletBinding()]
     param(
-        $URI
+        $URI,
+        $ForceFileExtract
     )
 
     $IWRSettings = get-IWRSettings
@@ -26,7 +27,13 @@
     # Download
     if ( ! (test-path $LocalFile) ) {
         write-verbose "download File $URI"
-        Invoke-WebRequest -UseBasicParsing -URI $URI @IWRSettings -OutFile $localFile
+        try {
+            Invoke-WebRequest -UseBasicParsing -URI $URI @IWRSettings -OutFile $localFile
+        }
+        catch {
+            Write-Warning "Broken HP Servers... Try Http instead..."
+            Invoke-WebRequest -UseBasicParsing -URI $URI.replace('https://','http://') @IWRSettings -OutFile $localFile
+        }
     }
 
     if ( -not ( test-path $localFile ) ) { throw "missing $LocalFile" }
@@ -35,6 +42,10 @@
     # Expand if necessary
     if ( $LocalFile.trim().EndsWith(".xml") ) {
         $RawDataFile = $localFile
+    }
+    elseif ( $ForceFileExtract ) { 
+        $RawDataFile = join-path (get-CachePath) $ForceFileExtract
+        expand $localFile -F:$ForceFileExtract (get-CachePath)
     }
     elseif ( $LocalFile.trim().EndsWith(".cab") ) {
         $RawDataFile = "$($LocalFile).xml"
@@ -46,6 +57,6 @@
         throw "Unknown data type $LocalFile"
     }
 
-    # Return content (fix for stupid Lenovo)
+    # Return content (fix for Lenovo)
     ( get-content -Raw -Path $RawDataFile ) -as [xml]  | Write-Output
 }
