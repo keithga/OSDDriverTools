@@ -13,7 +13,7 @@ function get-BIOSPkgsForHP {
 
     $RawData2 = get-RawDataHP2
 
-    # $ModelTable = get-ModelInfoHP
+    $ModelTable = get-ModelInfoHP
 
 
     $rawdata2.SystemsManagementCatalog.SoftwareDistributionPackage | 
@@ -38,9 +38,9 @@ function get-BIOSPkgsForHP {
                 Hash = [System.BitConverter]::ToString([system.convert]::FromBase64String($_.InstallableItem.OriginFile.Digest)).replace('-','')  # SHA1 :^p
 
                 ExtractCommand = ''  # Nothing to extract for HP BIOS commands
-                ExecuteCommand = $_.InstallableItem.CommandLineInstallerData.PRogram + $_.InstallableItem.CommandLineInstallerData.Arguments
+                ExecuteCommand = '.\' + $_.InstallableItem.CommandLineInstallerData.PRogram + ' ' + $_.InstallableItem.CommandLineInstallerData.Arguments
                 Machines = ( $_.InstallableItem.ApplicabilityRules.IsInstalled.innerxml | select-string -AllMatches -Pattern "product LIKE '%([0-9A-F]{4})%'" | % Matches | % { $_.Groups[1].Value } ) # -join ' ' 
-
+                MachinesFriendly = ( $_.InstallableItem.ApplicabilityRules.IsInstalled.innerxml | select-string -AllMatches -Pattern "product LIKE '%([0-9A-F]{4})%'" | % Matches | % { $_.Groups[1].Value } ) | ForEach-Object { $ModelTable.Item($_) }
             }
         } | Write-Output
 
