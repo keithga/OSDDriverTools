@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<sequence version="3.00" name="Custom Task Sequence" description="Sample Custom Task Sequence">
+  <group expand="true" name="Restart into WinPE from Full OS" description="" disable="false" continueOnError="false">
+    <step name="Copy scripts" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTICopyScripts.wsf"</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step name="Apply Windows PE - Full OS" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTIApply.wsf" /PE</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step type="SMS_TaskSequence_RebootAction" name="Restart computer - Full OS" description="Restart computer if on full OS" disable="false" continueOnError="false" runIn="WinPEandFullOS" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="SMSRebootMessage" property="Message"></variable>
+        <variable name="SMSRebootTimeout" property="MessageTimeout">60</variable>
+        <variable name="SMSRebootTarget" property="Target"></variable>
+      </defaultVarList>
+      <action>smsboot.exe /target:WinPE</action>
+      <condition></condition>
+    </step>
+    <action />
+    <condition>
+      <expression type="SMS_TaskSequence_VariableConditionExpression">
+        <variable name="Variable">SystemDrive</variable>
+        <variable name="Operator">notEquals</variable>
+        <variable name="Value">X:</variable>
+      </expression>
+    </condition>
+  </group>
+  <group expand="true" name="Firmware Update" description="" disable="false" continueOnError="false">
+    <action />
+    <step type="BDD_InstallApplication" name="Application: Update BIOS Firmware" description="" disable="false" continueOnError="false" runIn="WinPEandFullOS" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="ApplicationGUID" property="ApplicationGUID">{34a49593-742e-43f5-a974-d462af47e481}</variable>
+        <variable name="ApplicationSuccessCodes" property="ApplicationSuccessCodes">0 3010</variable>
+      </defaultVarList>
+      <action>cscript.exe "%SCRIPTROOT%\ZTIApplications.wsf"</action>
+    </step>
+    <step name="Copy scripts" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTICopyScripts.wsf"</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step name="Apply Windows PE - Update FW" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTIApply.wsf" /PE</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step type="SMS_TaskSequence_RebootAction" name="Restart computer - Update FW" description="" disable="false" continueOnError="false" runIn="WinPEandFullOS" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="SMSRebootMessage" property="Message"></variable>
+        <variable name="SMSRebootTimeout" property="MessageTimeout">60</variable>
+        <variable name="SMSRebootTarget" property="Target"></variable>
+      </defaultVarList>
+      <action>smsboot.exe /target:WinPE</action>
+    </step>
+  </group>
+  <group expand="true" name="TPM Update" description="" disable="true" continueOnError="false">
+    <action />
+    <step type="SMS_TaskSequence_RunCommandLineAction" name="TBD" description="" disable="false" continueOnError="false" startIn="" successCodeList="0 3010" runIn="WinPEandFullOS">
+      <defaultVarList>
+        <variable name="PackageID" property="PackageID"></variable>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+      <action>cmd.exe /c Echo Not ready yet...</action>
+    </step>
+    <step name="Copy scripts" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTICopyScripts.wsf"</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step name="Apply Windows PE - TPM Update" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTIApply.wsf" /PE</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step type="SMS_TaskSequence_RebootAction" name="Restart computer - TPM Update" description="" disable="false" continueOnError="false" runIn="WinPEandFullOS" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="SMSRebootMessage" property="Message"></variable>
+        <variable name="SMSRebootTimeout" property="MessageTimeout">60</variable>
+        <variable name="SMSRebootTarget" property="Target"></variable>
+      </defaultVarList>
+      <action>smsboot.exe /target:WinPE</action>
+    </step>
+  </group>
+  <group expand="true" name="Firmware Settings" description="" disable="false" continueOnError="false">
+    <action />
+    <step type="BDD_InstallApplication" name="Application: Update BIOS Configuration" description="" disable="false" continueOnError="false" runIn="WinPEandFullOS" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="ApplicationGUID" property="ApplicationGUID">{f9264359-245b-4c67-b2b4-a898c1b41ca8}</variable>
+        <variable name="ApplicationSuccessCodes" property="ApplicationSuccessCodes">0 3010</variable>
+      </defaultVarList>
+      <action>cscript.exe "%SCRIPTROOT%\ZTIApplications.wsf"</action>
+    </step>
+    <step name="Copy scripts" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTICopyScripts.wsf"</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step name="Apply Windows PE - FW Settings" disable="true" continueOnError="false" successCodeList="0 3010" description="Un-Needed if the next step is to apply a custom WinPE Image. " startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTIApply.wsf" /PE</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step type="SMS_TaskSequence_RebootAction" name="Restart computer - FW Settings" description="" disable="true" continueOnError="false" runIn="WinPEandFullOS" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="SMSRebootMessage" property="Message"></variable>
+        <variable name="SMSRebootTimeout" property="MessageTimeout">60</variable>
+        <variable name="SMSRebootTarget" property="Target"></variable>
+      </defaultVarList>
+      <action>smsboot.exe /target:WinPE</action>
+    </step>
+  </group>
+  <group expand="true" name="Reboot into Custom WinPE" description="" disable="false" continueOnError="false">
+    <action />
+    <step type="SMS_TaskSequence_SetVariableAction" name="Reset OS Source Drive" description="" disable="false" continueOnError="false" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="VariableName" property="VariableName">OriginalPartitionIdentifier</variable>
+        <variable name="VariableValue" property="VariableValue"></variable>
+      </defaultVarList>
+      <action>cscript.exe "%SCRIPTROOT%\ZTISetVariable.wsf"</action>
+    </step>
+    <step type="SMS_TaskSequence_PartitionDiskAction" name="Format and Partition Disk (UEFI)" description="" runIn="WinPE" successCodeList="0" disable="false" continueOnError="false">
+      <defaultVarList>
+        <variable name="OSDDiskIndex" property="DiskIndex">0</variable>
+        <variable name="OSDDiskPartitions1Type" property="OSDDiskPartitions1Type">Recovery</variable>
+        <variable name="DONotCreateExtraPartition" property="DONotCreateExtraPartition"></variable>
+        <variable name="OSDPartitions0Type" property="Partitions0Type">EFI</variable>
+        <variable name="OSDPartitions0FileSystem" property="Partitions0FileSystem">FAT32</variable>
+        <variable name="OSDPartitions0Bootable" property="Partitions0Bootable">True</variable>
+        <variable name="OSDPartitions0QuickFormat" property="Partitions0QuickFormat">True</variable>
+        <variable name="OSDPartitions0VolumeName" property="Partitions0VolumeName">Boot</variable>
+        <variable name="OSDPartitions0Size" property="Partitions0Size">499</variable>
+        <variable name="OSDPartitions0SizeUnits" property="Partitions0SizeUnits">MB</variable>
+        <variable name="OSDPartitions0VolumeLetterVariable" property="Partitions0VolumeLetterVariable">SYSDisk</variable>
+        <variable name="OSDPartitions1Type" property="Partitions1Type">MSR</variable>
+        <variable name="OSDPartitions1FileSystem" property="Partitions1FileSystem">NTFS</variable>
+        <variable name="OSDPartitions1Bootable" property="Partitions1Bootable">False</variable>
+        <variable name="OSDPartitions1QuickFormat" property="Partitions1QuickFormat">True</variable>
+        <variable name="OSDPartitions1VolumeName" property="Partitions1VolumeName"></variable>
+        <variable name="OSDPartitions1Size" property="Partitions1Size">128</variable>
+        <variable name="OSDPartitions1SizeUnits" property="Partitions1SizeUnits">MB</variable>
+        <variable name="OSDPartitions1VolumeLetterVariable" property="Partitions1VolumeLetterVariable"></variable>
+        <variable name="OSDPartitions2Type" property="Partitions2Type">Primary</variable>
+        <variable name="OSDPartitions2FileSystem" property="Partitions2FileSystem">NTFS</variable>
+        <variable name="OSDPartitions2Bootable" property="Partitions2Bootable">False</variable>
+        <variable name="OSDPartitions2QuickFormat" property="Partitions2QuickFormat">True</variable>
+        <variable name="OSDPartitions2VolumeName" property="Partitions2VolumeName">Windows</variable>
+        <variable name="OSDPartitions2Size" property="Partitions2Size">99</variable>
+        <variable name="OSDPartitions2SizeUnits" property="Partitions2SizeUnits">%</variable>
+        <variable name="OSDPartitions2VolumeLetterVariable" property="Partitions2VolumeLetterVariable">OSDisk</variable>
+        <variable name="OSDPartitions3Type" property="Partitions3Type">Recovery</variable>
+        <variable name="OSDPartitions3FileSystem" property="Partitions3FileSystem">NTFS</variable>
+        <variable name="OSDPartitions3Bootable" property="Partitions3Bootable">False</variable>
+        <variable name="OSDPartitions3QuickFormat" property="Partitions3QuickFormat">True</variable>
+        <variable name="OSDPartitions3VolumeName" property="Partitions3VolumeName">Recovery</variable>
+        <variable name="OSDPartitions3Size" property="Partitions3Size">100</variable>
+        <variable name="OSDPartitions3SizeUnits" property="Partitions3SizeUnits">%</variable>
+        <variable name="OSDPartitions3VolumeLetterVariable" property="Partitions3VolumeLetterVariable"></variable>
+        <variable name="OSDPartitions" property="Partitions">4</variable>
+        <variable name="OSDPartitionStyle" property="PartitionStyle">GPT</variable>
+      </defaultVarList>
+      <action>cscript.exe "%SCRIPTROOT%\ZTIDiskpart.wsf"</action>
+    </step>
+    <step name="Copy scripts" disable="false" continueOnError="false" successCodeList="0 3010" description="" startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTICopyScripts.wsf"</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step name="Apply Windows PE - Custom PE" disable="false" continueOnError="false" successCodeList="0 3010" description="Un-Needed if the next step is to apply a custom WinPE Image. " startIn="">
+      <action>cscript.exe "%SCRIPTROOT%\LTIApply.wsf" /PE /DestinationOSInstallType:ByVariable /DestinationOSVariable:OSDisk</action>
+      <defaultVarList>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+    </step>
+    <step type="SMS_TaskSequence_RunCommandLineAction" name="Copy Custom WinPE Image" description="" disable="false" continueOnError="false" startIn="" successCodeList="0 3010" runIn="WinPEandFullOS">
+      <defaultVarList>
+        <variable name="PackageID" property="PackageID"></variable>
+        <variable name="RunAsUser" property="RunAsUser">false</variable>
+        <variable name="SMSTSRunCommandLineUserName" property="SMSTSRunCommandLineUserName"></variable>
+        <variable name="SMSTSRunCommandLineUserPassword" property="SMSTSRunCommandLineUserPassword"></variable>
+        <variable name="LoadProfile" property="LoadProfile">false</variable>
+      </defaultVarList>
+      <action>cmd.exe /c powershell.exe copy-item %ScriptRoot%\..\Boot\MyCustomWinPEx64.1.0.wim %SYSDisk%\Sources\boot.wim</action>
+    </step>
+    <step type="SMS_TaskSequence_SetVariableAction" name="Skip Final Summary" description="" disable="false" continueOnError="false" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="VariableName" property="VariableName">SkipFinalSummary</variable>
+        <variable name="VariableValue" property="VariableValue">YES</variable>
+      </defaultVarList>
+      <action>cscript.exe "%SCRIPTROOT%\ZTISetVariable.wsf"</action>
+    </step>
+    <step type="SMS_TaskSequence_SetVariableAction" name="Restart Computer" description="" disable="false" continueOnError="false" successCodeList="0 3010">
+      <defaultVarList>
+        <variable name="VariableName" property="VariableName">FinishAction</variable>
+        <variable name="VariableValue" property="VariableValue">REBOOT</variable>
+      </defaultVarList>
+      <action>cscript.exe "%SCRIPTROOT%\ZTISetVariable.wsf"</action>
+    </step>
+  </group>
+</sequence>
