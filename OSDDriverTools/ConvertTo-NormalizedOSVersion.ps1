@@ -36,6 +36,7 @@ function ConvertTo-NormalizedOSVersion {
                 'winpe10x.x86' { 'Win10.x86' | write-output; break} 
 
                 '(Vista|XP|WinPE)'               { throw "Type $OSVer is unsupported"; break }
+                'Windows 10 IoT Enterprise 2016 LTSB, 64-Bit' { 'Win10.x64.1607' | write-output ; Break }
 
                 'W(in(dows)?)?.*(?<OS>7|8|8\.1|10)[^0-9]*(?<arch>64|32|86)[^0-9]*(?<Ver>1507|1511|1607|1703|1709|1803|1809)?' { 
                     $matches | out-string | Write-verbose

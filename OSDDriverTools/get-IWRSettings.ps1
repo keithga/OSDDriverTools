@@ -20,6 +20,8 @@
     [CmdletBinding()]
     param()
 
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
     if ( test-path "$Profile\..\IWRSettings.xml") {
         Import-Clixml "$Profile\..\IWRSettings.xml" | Write-Output
     }
