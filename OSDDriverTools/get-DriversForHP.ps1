@@ -20,7 +20,9 @@
         ForEach-Object {
 
             if ( $_.SoftPaqId -in $results.keys ) {
-                $results.item($_.SoftPaqId).Machines += $_.SystemID
+                if ( $_.SystemID -notin $results.item($_.SoftPaqId).Machines ) {
+                    $results.item($_.SoftPaqId).Machines += $_.SystemID
+                }
             }
             else {
 
@@ -45,7 +47,8 @@
 
                         ExtractCommand = 'expand <TBD>'
                         ExecuteCommand = '' # Nothing to execute, copy
-                        Machines = @($_.SystemID)
+                        Machines = @($_.SystemID -split ',')
+                        FriendlyMachines = @($_.SystemID -split ',' | ForEach-Object { $ModelTable.Item($_) })
 
                     }
                 )

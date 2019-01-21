@@ -42,7 +42,8 @@ function get-DriversForDell {
 
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy
-                Machines = $_.SupportedSystems.Brand.Model.SystemID # | ForEach-Object { $ModelTable.Item($_) }
+                Machines = @($_.SupportedSystems.Brand.Model.SystemID)
+                FriendlyMachines = @($_.SupportedSystems.Brand.Model.SystemID | ForEach-Object { $ModelTable.Item($_) })
 
             }
         } | Write-Output

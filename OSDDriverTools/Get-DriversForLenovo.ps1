@@ -14,6 +14,8 @@ function get-DriversForLenovo {
     $RawData = get-RawDataLenovo
     Write-Progress -Activity "Get Lenovo Drivers" -PercentComplete 0
 
+    $ModelTable = get-ModelInfoLenovo
+
     $IWRSettings = get-IWRSettings 
 
     $DriverList = $RawData.products.product | 
@@ -54,6 +56,8 @@ function get-DriversForLenovo {
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy
                 Machines = $_.QUeries.Types.Type
+                FriendlyMachines = $_.QUeries.Types.Type | ForEach-Object { $ModelTable.Item($_) }
+
             }
         }
 
