@@ -7,6 +7,10 @@ function get-DriversForLenovo {
     .DESCRIPTION
     Get the Driver list from Lenovo
 
+    .NOTES
+    There is still an issue with the lenovo manifest Where the Global XML file can have two entries like the M700 and M800 point to the same EXE file. 
+    Only a half dozen double entries, so skip for now.
+
     #>
     [CmdletBinding()]
     param()
@@ -21,22 +25,45 @@ function get-DriversForLenovo {
     $DriverList = $RawData.products.product | 
         where-object OS -in 'Win10','Win732','Win764'
 
+    $FoundIDs = @{}
+
     $i = 0
+    $ie = New-Object -com InternetExplorer.Application
 
-    $DriverList | ForEach-Object {
+    foreach ( $Driver in $DriverList ) {
 
-        Write-Progress -Activity "Get Lenovo DriverModel $Model"  -PercentComplete ( $i++ / $DriverList.Count * 100 ) 
+        Write-Progress -Activity "Get Lenovo DriverModel $($DRiver.Model)"  -PercentComplete ( $i++ / $DriverList.Count * 100 ) 
 
+        $SCCMLink = $Driver.DriverPack | where-object ID -eq "SCCM" | foreach-object '#text'
 
-        $SCCMLink = $_.DriverPack | where-object ID -eq "SCCM" | foreach-object '#text'
+        write-verbose $SCCMLink
 
-        $DrvLinks = Invoke-WebRequest -UseBasicParsing -Uri $SCCMLink @IWRSettings | 
-            select-object -ExpandProperty content | 
-            Select-String -Pattern 'https://download.lenovo.com[^\"]*exe' -AllMatches | 
-            foreach-object Matches | 
-            Foreach-Object Value 
+        if ( $FoundIDs.ContainsKey($SCCMLink) ) { write-verbose "Dupe $SccmLink" ; continue }
+        $FoundIDs.add($SCCMLink,"")
+        $Driver | out-string | Write-Verbose
 
-        foreach ( $DrvLink in $DrvLinks ) {
+        #region SPECIAL Lenovo parsing
+
+        try {
+	        $ie.navigate($SCCMLink)
+	        while ($ie.ReadyState -ne 4) {
+		        start-sleep -m 100
+	        }
+	        $ie.Document.parentWindow.execScript("var JSIEVariable = new XMLSerializer().serializeToString(document);", "javascript")
+	        $obj = $ie.Document.parentWindow.GetType().InvokeMember("JSIEVariable", 4096, $null, $ie.Document.parentWindow, $null)
+	        $html = $obj.ToString()
+        }
+        catch {
+	        Write-Error "Error: $($Driver.Exception.Message)"
+        }
+        
+        $DrvLinks = $HTML | Select-String '(?<Link>http[s]?://download.lenovo.com[^\"]*exe).*SHA-256:(?<SHA256>[0-9A-Fa-f]{64})' -AllMatches | % Matches 
+
+        #endregion
+
+        foreach ( $DrvKink in $DrvLinks ) {
+
+            $DrvLink = $DrvKink | % Groups | ? Name -eq 'LINK' | % VALUE 
 
             [pscustomobject] @{
 
@@ -45,23 +72,27 @@ function get-DriversForLenovo {
                 Name = split-path -leaf $DrvLink.replace('.exe','')
                 Description = "Info: " + $Drvlink.replace('.exe','.txt') # Cheat!
                 Tag = 'Driver Lenovo'
-                Date = $_.DriverPack | Where-Object Date -match '^\d{6}$' | foreach-object { ($_.Date.substring(0,4)+'/'+$_.Date.SubString(4,2)+'/01') }
+                Date = $Driver.DriverPack | Where-Object Date -match '^\d{6}$' | foreach-object { ($_.Date.substring(0,4)+'/'+$_.Date.SubString(4,2)+'/01') }
                 Version = ''
 
                 URL = $DrvLink
-                Size = '' #TBD
-                Hash = '' #TBD
-                OSVer = $DrvLink | ConvertTo-NormalizedOSVersion
+                Size = '' # NA
+                Hash = $DrvKink | % Groups | ? Name -eq 'SHA256' | % VALUE
+                OSVer = $Driver.OS | ConvertTo-NormalizedOSVersion
+                # OSVer = $DrvLink | ConvertTo-NormalizedOSVersion
 
                 ExtractCommand = 'expand <TBD>'
                 ExecuteCommand = '' # Nothing to execute, copy
-                Machines = $_.QUeries.Types.Type
-                FriendlyMachines = $_.QUeries.Types.Type | ForEach-Object { $ModelTable.Item($_) }
+                Machines = $Driver.QUeries.Types.Type
+                FriendlyMachines = $Driver.QUeries.Types.Type | ForEach-Object { $ModelTable.Item($_) }
 
             }
         }
 
+        
     }
+
+    $ie.Quit()
 
     Write-Progress -Completed -Activity "Get Lenovo Drivers"
 

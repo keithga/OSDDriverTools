@@ -29,16 +29,17 @@ function ConvertTo-NormalizedOSVersion {
             switch -regex ( $os )
             {
 
-                '_w8164' { 'Win81.x64' | write-output; break}   # Lenovo silliness
+                '_w8164' { 'Win81.x64' | write-output; break}  # Lenovo silliness
                 '_wb64' { 'Win10.x64' | write-output; break}   # Lenovo silliness
                 '_wb32' { 'Win10.x86' | write-output; break}   # Lenovo silliness
+                'Win10' { 'Win10.x64' | write-output; break}   # Lenovo silliness
                 'winpe10x.x64' { 'Win10.x64' | write-output; break} 
                 'winpe10x.x86' { 'Win10.x86' | write-output; break} 
 
                 '(Vista|XP|WinPE)'               { throw "Type $OSVer is unsupported"; break }
                 'Windows 10 IoT Enterprise 2016 LTSB, 64-Bit' { 'Win10.x64.1607' | write-output ; Break }
 
-                'W(in(dows)?)?.*(?<OS>7|8|8\.1|10)[^0-9]*(?<arch>64|32|86)[^0-9]*(?<Ver>1507|1511|1607|1703|1709|1803|1809)?' { 
+                'W(in(dows)?)?.*(?<OS>7|8|8\.1|10)[^0-9]*_?(?<arch>64|32|86)[^0-9]*(?<Ver>1507|1511|1607|1703|1709|1803|1809)?' { 
                     $matches | out-string | Write-verbose
                     'Win' + $matches.OS + '.x' + $matches.Arch + '.' + $Matches.Ver | 
                     ForEach-Object { $_.Replace('x32','x86').replace('Win8.1','Win81').trim('.') } |
