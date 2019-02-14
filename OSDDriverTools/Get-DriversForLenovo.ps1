@@ -27,7 +27,6 @@ function get-DriversForLenovo {
 
     $FoundIDs = @{}
 
-    $i = 0
     $ie = New-Object -com InternetExplorer.Application
 
     foreach ( $Driver in $DriverList ) {
@@ -73,10 +72,10 @@ function get-DriversForLenovo {
                 Description = "Info: " + $Drvlink.replace('.exe','.txt') # Cheat!
                 Tag = 'Driver Lenovo'
                 Date = $Driver.DriverPack | Where-Object Date -match '^\d{6}$' | foreach-object { ($_.Date.substring(0,4)+'/'+$_.Date.SubString(4,2)+'/01') }
-                Version = ''
+                Version = $Driver.DriverPack | Where-Object Date -match '^\d{6}$' | % Date
 
                 URL = $DrvLink
-                Size = '' # NA
+                Size = 0 # No driver size on the page :^(
                 Hash = $DrvKink | % Groups | ? Name -eq 'SHA256' | % VALUE
                 OSVer = $Driver.OS | ConvertTo-NormalizedOSVersion
                 # OSVer = $DrvLink | ConvertTo-NormalizedOSVersion
@@ -88,7 +87,6 @@ function get-DriversForLenovo {
 
             }
         }
-
         
     }
 
