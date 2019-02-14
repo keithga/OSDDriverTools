@@ -27,38 +27,46 @@ function get-DriversForLenovo {
 
     $FoundIDs = @{}
 
+    $i = 0
+    $j = 0
     $ie = New-Object -com InternetExplorer.Application
 
     foreach ( $Driver in $DriverList ) {
 
-        Write-Progress -Activity "Get Lenovo DriverModel $($DRiver.Model)"  -PercentComplete ( $i++ / $DriverList.Count * 100 ) 
+        Write-Progress -Activity "Get Lenovo DriverModel $($DRiver.Model)   [$i/$j]X"  -PercentComplete ( $i++ / $DriverList.Count * 100 ) 
 
         $SCCMLink = $Driver.DriverPack | where-object ID -eq "SCCM" | foreach-object '#text'
 
-        write-verbose $SCCMLink
-
-        if ( $FoundIDs.ContainsKey($SCCMLink) ) { write-verbose "Dupe $SccmLink" ; continue }
-        $FoundIDs.add($SCCMLink,"")
-        $Driver | out-string | Write-Verbose
-
-        #region SPECIAL Lenovo parsing
-
-        try {
-	        $ie.navigate($SCCMLink)
-	        while ($ie.ReadyState -ne 4) {
-		        start-sleep -m 100
-	        }
-	        $ie.Document.parentWindow.execScript("var JSIEVariable = new XMLSerializer().serializeToString(document);", "javascript")
-	        $obj = $ie.Document.parentWindow.GetType().InvokeMember("JSIEVariable", 4096, $null, $ie.Document.parentWindow, $null)
-	        $html = $obj.ToString()
+        if ( $FoundIDs.ContainsKey($SCCMLink) ) { 
+            write-verbose "Dupe $SccmLink"
+            $drvLinks = $FoundIDs[$SCCMLink] 
         }
-        catch {
-	        Write-Error "Error: $($Driver.Exception.Message)"
-        }
+        else {
+
+            #region SPECIAL Lenovo parsing
+
+            try {
+	            $ie.navigate($SCCMLink)
+	            while ($ie.ReadyState -ne 4) {
+		            start-sleep -m 100
+	            }
+	            $ie.Document.parentWindow.execScript("var JSIEVariable = new XMLSerializer().serializeToString(document);", "javascript")
+	            $obj = $ie.Document.parentWindow.GetType().InvokeMember("JSIEVariable", 4096, $null, $ie.Document.parentWindow, $null)
+	            $html = $obj.ToString()
+            }
+            catch {
+	            Write-Error "Error: $($Driver.Exception.Message)"
+            }
         
-        $DrvLinks = $HTML | Select-String '(?<Link>http[s]?://download.lenovo.com[^\"]*exe).*SHA-256:(?<SHA256>[0-9A-Fa-f]{64})' -AllMatches | % Matches 
+            $j++
 
-        #endregion
+            $DrvLinks = $HTML | Select-String '(?<Link>http[s]?://download.lenovo.com[^\"]*exe).*SHA-256:(?<SHA256>[0-9A-Fa-f]{64})' -AllMatches | % Matches 
+
+            $FoundIDs.add($SCCMLink,$drvLinks)
+
+            #endregion
+
+        }
 
         foreach ( $DrvKink in $DrvLinks ) {
 
